@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiteGuard Web - Verificador</title>
+
+    <style>
+        /* Estilo Visual (CSS) - Aparência "Hacker" Moderna */
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px; /* Evita corte no mobile */
+        }
+
+        .container {
+            background-color: #161b22;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            border: 1px solid #30363d;
+        }
+
+        h1 {
+            color: #58a6ff;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #8b949e;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background-color: #0d1117;
+            color: #fff;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input:focus { border-color: #58a6ff; }
+
+        button {
+            background-color: #238636;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: #2ea043; }
+
+        /* Área de Resultados */
+        #loading {
+            display: none;
+            margin-top: 20px;
+            color: #e3b341;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        #results {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .result-card {
+            background-color: #21262d;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #58a6ff;
+        }
+
+        .btn-link {
+            display: block;
+            margin-top: 5px;
+            text-decoration: none;
+            color: #58a6ff;
+            font-size: 0.9em;
+        }
+
+        .btn-link:hover { text-decoration: underline; }
+
+
+        /* --------------------------------------------- */
+        /* --------- 🔥 RESPONSIVIDADE REAL 🔥 --------- */
+        /* --------------------------------------------- */
+
+        /* Celulares até 450px */
+        @media (max-width: 450px) {
+            body { padding: 10px; }
+
+            .container { padding: 20px; }
+
+            h1 { font-size: 1.5rem; }
+
+            input, button {
+                font-size: 15px;
+                padding: 12px;
+            }
+
+            .result-card { padding: 12px; }
+        }
+
+        /* Tablets e celulares grandes */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+
+            .container {
+                max-width: 500px;
+                width: 100%;
+            }
+        }
+
+        /* Telas grandes */
+        @media (min-width: 1200px) {
+            .container { max-width: 480px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🛡️ SiteGuard Web</h1>
+        <p>Hub de Verificação de Segurança Instantânea</p>
+        
+        <input type="text" id="urlInput" placeholder="Digite o site (ex: google.com)">
+        <button onclick="iniciarAnalise()">ANALISAR SITE</button>
+
+        <div id="loading">
+            <span id="scanText">Conectando aos satélites...</span>
+        </div>
+
+        <div id="results">
+            <h3 style="text-align: center; color: #fff;">Relatório Pronto</h3>
+            
+            <div class="result-card" style="border-left-color: #238636;">
+                <strong>🔒 Verificação SSL Profunda</strong>
+                <span style="display:block; font-size:0.8em; color:#8b949e;">Via Qualys SSL Labs</span>
+                <a id="linkSSL" href="#" target="_blank" class="btn-link">Abrir Relatório SSL →</a>
+            </div>
+
+            <div class="result-card" style="border-left-color: #e3b341;">
+                <strong>🦠 Checagem de Vírus/Malware</strong>
+                <span style="display:block; font-size:0.8em; color:#8b949e;">Via VirusTotal</span>
+                <a id="linkVirus" href="#" target="_blank" class="btn-link">Verificar Reputação →</a>
+            </div>
+
+            <div class="result-card" style="border-left-color: #f85149;">
+                <strong>🛡️ Cabeçalhos de Segurança</strong>
+                <span style="display:block; font-size:0.8em; color:#8b949e;">Via SecurityHeaders</span>
+                <a id="linkHeaders" href="#" target="_blank" class="btn-link">Verificar Headers →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function iniciarAnalise() {
+            let url = document.getElementById('urlInput').value.trim();
+            
+            // Limpeza da URL
+            url = url.replace('https://', '').replace('http://', '').replace('/', '');
+
+            if (url === "") {
+                alert("Por favor, digite uma URL válida!");
+                return;
+            }
+
+            // Esconde resultados e mostra carregamento
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            let scanText = document.getElementById('scanText');
+
+            // A "animação" da análise
+            let etapas = [
+                "Resolvendo DNS...",
+                "Verificando Certificado SSL...",
+                "Analisando Portas Abertas...",
+                "Gerando Relatório..."
+            ];
+
+            let i = 0;
+            let intervalo = setInterval(() => {
+                if (i < etapas.length) {
+                    scanText.innerText = etapas[i];
+                    i++;
+                } else {
+                    clearInterval(intervalo);
+                    mostrarResultados(url);
+                }
+            }, 800);
+        }
+
+        function mostrarResultados(domain) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+
+            // Links de verificação
+            document.getElementById('linkSSL').href = `https://www.ssllabs.com/ssltest/analyze.html?d=${domain}`;
+            document.getElementById('linkVirus').href = `https://www.virustotal.com/gui/domain/${domain}`;
+            document.getElementById('linkHeaders').href = `https://securityheaders.com/?q=${domain}&followRedirects=on`;
+        }
+    </script>
+
+</body>
+</html>
